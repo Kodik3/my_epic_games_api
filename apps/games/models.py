@@ -10,12 +10,13 @@ from auths.models import CastomUser
 
 class Game(models.Model):
     name = models.CharField(verbose_name='название', max_length=100)
+    user = models.ForeignKey(to=CastomUser, verbose_name='пользователь', on_delete=models.CASCADE, default=None, related_name='game')
     price = models.DecimalField(verbose_name='цена', max_digits=11, decimal_places=2, 
         validators=[MinValueValidator(0, message='Мы деньги за игры не даём!')]
     )
     poster = models.ImageField(verbose_name='постер', upload_to='posters', default='posters/default_game.png', blank=True)
     rate = models.FloatField(verbose_name='рэйтиннг', max_length=5, default=0, blank=True)
-    quantity = models.IntegerField(verbose_name='количество', default=0)
+    quantity = models.IntegerField(verbose_name='количество', default=0, blank=True)
 
     @property
     def is_active(self):
