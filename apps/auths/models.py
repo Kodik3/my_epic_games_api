@@ -26,7 +26,7 @@ class CastomUser(AbstractBaseUser, PermissionsMixin):
     balance = models.DecimalField(verbose_name='баланс', max_digits=11, decimal_places=2, default=0.00)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-
+    
     objects = CastomUserManager()
 
     EMAIL_FIELD = 'email'

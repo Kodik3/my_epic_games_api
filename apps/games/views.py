@@ -13,10 +13,15 @@ from rest_framework.validators import ValidationError
 # serializers.
 from .serializers import GameSerializer, CreateGameSerializer
 # Models.
-from .models import Game
+from .models import Game, UserGame
 from auths.models import CastomUser
 # Local.
 from abstracts.utils import get_object_or_404
+from .utils import (
+    save_game_to_user,
+    all_user_games
+)
+
 
 
 class GameViewSet(viewsets.ViewSet):
@@ -32,7 +37,7 @@ class GameViewSet(viewsets.ViewSet):
             game = self.queryset.get(id=pk)
         except Game.DoesNotExist:
             raise ValidationError('Игра не найдена', code=404)
-        serializer = GameSerializer(instance=game)
+        serializer: GameSerializer = GameSerializer(instance=game)
         return Response(data=serializer.data)
 
     def create(self, request: Request, *args, **kwargs) -> Response:
@@ -45,38 +50,51 @@ class GameViewSet(viewsets.ViewSet):
                 }
             )
         return Response(serializer.errors)
+    
+    def destroy(self, request: Request, pk: str) -> Response:
+        try:
+            game: Game = self.queryset.filter(id=pk)
+        except Game.DoesNotExist:
+            raise ValidationError('Game not found!', code=404)
+        game_name: str = game.name
+        game.delete()
+        return Response(data={
+            'status': 'OK',
+            'message': f"Game {game_name} deleted! id: {pk}"
+            }
+        )
 
 
 class ActiveGameViewSer(viewsets.ViewSet):
-    queryset = Game.objects.all()
+    queryset = Game.objects.filter(is_active=True)
 
     def list(self, request: Request, *args, **kwargs) -> Response:
-        active_games: list = [game for game in self.queryset if game.is_active]
-        serializer = GameSerializer(instance=active_games, many=True)
+        serializer = GameSerializer(instance=self.queryset, many=True)
         return Response(data=serializer.data)
 
 
 class BuyGameView(View):
-    template: str = '' 
+    template: str = ''
+    
     def get(self, request: HttpRequest, game_id: int) -> HttpResponse:
+        context: dict = {}
         user: CastomUser = request.user
         game: Game =  get_object_or_404(Game, game_id, 'Игра не найдена')
         if game.is_active == False:
             return HttpResponse('Игры нет в наличии')
-        context: dict = {}
         context['game'] = game
         return render(request, self.template, context)
 
     def post(self, request: HttpRequest, game_id: int) -> HttpResponse:
         user: CastomUser = request.user
-        data = request.POST
         game: Game =  get_object_or_404(Game, game_id)
+        
+        user_games = UserGame.objects.filter(user=user, game=game)
+        if user_games.exists():
+            return Response("У вас есть эта игра")
 
         if user.balance >= game.price:
-            user.balance -= game.price
-            user.save()
-            game.user = user
-            game.quantity -= 1
-            game.save()
-            # return redirect()
-        else: return Http404("...")
+            save_game_to_user(game=game, user=user)
+            # TODO: перекинть на страицу игры
+        else:
+            return Response("Не хватате средств!")
