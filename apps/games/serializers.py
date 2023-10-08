@@ -43,3 +43,9 @@ class CreateGameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
         fields = ['name', 'price', 'poster', 'rate', 'quantity']
+
+
+
+class SearchProductsSerializer(serializers.Serializer):
+    price1 = serializers.DecimalField(max_digits=11, decimal_places=2)
+    price2 = serializers.DecimalField(max_digits=11, decimal_places=2)

@@ -11,7 +11,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 # serializers.
-from .serializers import GameSerializer, CreateGameSerializer
+from .serializers import (
+    GameSerializer, 
+    CreateGameSerializer, 
+    SearchProductsSerializer
+)
 # Models.
 from .models import Game, UserGame
 from auths.models import CastomUser
@@ -141,7 +145,7 @@ class BuyGameView(View):
 
     def post(self, request: HttpRequest, game_id: int) -> HttpResponse:
         user: CastomUser = request.user
-        game: Game =  get_object_or_404(Game, game_id)
+        game: Game = get_object_or_404(Game, game_id)
         
         user_games = UserGame.objects.filter(user=user, game=game)
 
@@ -152,3 +156,21 @@ class BuyGameView(View):
             # TODO: перекинть на страицу игры
         else:
             return Response("Не хватате средств!")
+
+
+class SearchProductsInPriceRange(viewsets.ViewSet):
+    """ Поиск товаров в ценовом диапазоне """
+    serializer_class = SearchProductsSerializer
+
+    def get_queryset(self, x, y):
+        return Game.objects.filter(price__range=(x, y))
+
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        serializer = SearchProductsSerializer(data=request.data)
+        if serializer.is_valid():
+            price1 = serializer.validated_data['price1']
+            price2 = serializer.validated_data['price2']
+            queryset = self.get_queryset(price1, price2)
+            serializer = GameSerializer(instance=queryset, many=True)
+            return Response(data=serializer.data)
+        return Response(serializer.errors)
