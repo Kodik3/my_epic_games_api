@@ -1,8 +1,6 @@
-from typing import Any
 # Django.
 from django.http import Http404
-# models.
-from games.models import Game, UserGame
+
 
 def get_object_or_404(model, object_id: int, error_msg=None):
     try:

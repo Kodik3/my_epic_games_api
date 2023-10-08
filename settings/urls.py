@@ -7,12 +7,12 @@ from django.urls import path, include
 # Rest-fremework.
 from rest_framework.routers import DefaultRouter
 # views.
-from games.views import GameViewSet, ActiveGameViewSer
+from games.views import GameViewSet, ActiveGameViewSet
 
 
 router = DefaultRouter()
 router.register(r'game', GameViewSet, basename='game')
-router.register(r'active_game', ActiveGameViewSer, basename='active')
+router.register(r'active_game', ActiveGameViewSet, basename='active')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

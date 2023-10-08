@@ -52,21 +52,75 @@ class GameViewSet(viewsets.ViewSet):
         return Response(serializer.errors)
     
     def destroy(self, request: Request, pk: str) -> Response:
+        """Удаление игры."""
         try:
-            game: Game = self.queryset.filter(id=pk)
+            game: Game = self.queryset.get(id=pk)
         except Game.DoesNotExist:
             raise ValidationError('Game not found!', code=404)
-        game_name: str = game.name
+        name: str = game.name
         game.delete()
-        return Response(data={
-            'status': 'OK',
-            'message': f"Game {game_name} deleted! id: {pk}"
+        return Response(
+            data={
+                'status': 'OK',
+                'message': f"Game {name} deleted! id: {pk}"
             }
         )
+    
+    def update(self, request: Request, pk: str) -> Response:
+        """Обновление игры."""
+        try:
+            game = self.queryset.get(id=pk)
+        except Game.DoesNotExist:
+            raise ValidationError('Game not found', code=400)
 
+        serializer: GameSerializer = GameSerializer(
+            instance=game,
+            data=request.data
+            )
+        if not serializer.is_valid():
+            return Response(
+                data={
+                    'status': 'Warning',
+                    'message': f'Warning with: {game.name}'
+                }
+            )
+        serializer.save()
+        return Response(
+            data={
+                'status': 'OK',
+                'message': f'Game: {game.name} was updated'
+            }
+        )
+    
+    def partial_update(self, request: Request, pk: int) -> Response:
+        try:
+            game = self.queryset.get(id=pk)
+        except Game.DoesNotExist:
+            raise ValidationError('Game not found', code=400)
 
-class ActiveGameViewSer(viewsets.ViewSet):
-    queryset = Game.objects.filter(is_active=True)
+        serializer: GameSerializer = GameSerializer(
+            instance=game,
+            data=request.data,
+            partial=True
+        )
+        if not serializer.is_valid():
+            return Response(
+                data={
+                    'status': 'Warning',
+                    'message': f'Warning with: {game.name}'
+                }
+            )
+
+        serializer.save()
+        return Response(data={
+            'status': 'OK',
+            'message': f'Game: {game.name} was updated'
+        })
+    
+
+class ActiveGameViewSet(viewsets.ViewSet):
+    queryset = Game.objects.filter(quantity__gt=0)
+    serializer_class = GameSerializer
 
     def list(self, request: Request, *args, **kwargs) -> Response:
         serializer = GameSerializer(instance=self.queryset, many=True)
@@ -90,9 +144,9 @@ class BuyGameView(View):
         game: Game =  get_object_or_404(Game, game_id)
         
         user_games = UserGame.objects.filter(user=user, game=game)
+
         if user_games.exists():
             return Response("У вас есть эта игра")
-
         if user.balance >= game.price:
             save_game_to_user(game=game, user=user)
             # TODO: перекинть на страицу игры

@@ -8,7 +8,7 @@ class CastomUserManager(BaseUserManager):
         if not email:
             raise ValidationError('Требуется электронная почта')
         email = self.normalize_email(email)
-        user: 'MyUser' = self.model(email=email, **kwargs)
+        user = self.model(email=email, **kwargs)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -25,7 +25,6 @@ class CastomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(verbose_name='имя', max_length=100)
     balance = models.DecimalField(verbose_name='баланс', max_digits=11, decimal_places=2, default=0.00)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
     
     objects = CastomUserManager()
 
