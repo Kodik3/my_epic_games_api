@@ -44,8 +44,23 @@ class CreateGameSerializer(serializers.ModelSerializer):
         model = Game
         fields = ['name', 'price', 'poster', 'rate', 'quantity']
 
-
-
-class SearchProductsSerializer(serializers.Serializer):
+class SearchRangeProductsSerializer(serializers.Serializer):
     price1 = serializers.DecimalField(max_digits=11, decimal_places=2)
     price2 = serializers.DecimalField(max_digits=11, decimal_places=2)
+
+
+class FindPieceSerializer(serializers.Serializer):
+    name = serializers.CharField()
+
+
+class ByDescendingSerializer(serializers.Serializer):
+    choises = serializers.ChoiceField(
+        choices= (
+            ('id', 'ID'),
+            ('rate' , 'Rate'),
+            ('price', 'Price'),
+            ('quantity', 'Quantity')
+        )
+    )
+    descending = serializers.BooleanField(default=False)
+

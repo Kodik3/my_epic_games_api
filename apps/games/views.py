@@ -14,10 +14,15 @@ from rest_framework.validators import ValidationError
 from .serializers import (
     GameSerializer, 
     CreateGameSerializer, 
-    SearchProductsSerializer
+    SearchRangeProductsSerializer,
+    FindPieceSerializer,
+    ByDescendingSerializer
 )
 # Models.
-from .models import Game, UserGame
+from .models import (
+    Game, 
+    UserGame
+)
 from auths.models import CastomUser
 # Local.
 from abstracts.utils import get_object_or_404
@@ -160,17 +165,55 @@ class BuyGameView(View):
 
 class SearchProductsInPriceRange(viewsets.ViewSet):
     """ Поиск товаров в ценовом диапазоне """
-    serializer_class = SearchProductsSerializer
+    serializer_class = SearchRangeProductsSerializer
 
     def get_queryset(self, x, y):
         return Game.objects.filter(price__range=(x, y))
 
     def create(self, request: Request, *args, **kwargs) -> Response:
-        serializer = SearchProductsSerializer(data=request.data)
+        serializer = SearchRangeProductsSerializer(data=request.data)
         if serializer.is_valid():
             price1 = serializer.validated_data['price1']
             price2 = serializer.validated_data['price2']
             queryset = self.get_queryset(price1, price2)
+            serializer = GameSerializer(instance=queryset, many=True)
+            return Response(data=serializer.data)
+        return Response(serializer.errors)
+
+
+class FindPieceOfTextViewSet(viewsets.ViewSet):
+    """ Поиск товаров по части слова """
+    serializer_class = FindPieceSerializer
+
+    def get_queryset(self, piece: str):
+        return Game.objects.filter(name__icontains=f"{piece}")
+
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        serializer = FindPieceSerializer(data=request.data)
+        if serializer.is_valid():
+            piece = serializer.validated_data['name']
+            queryset = self.get_queryset(str(piece))
+            serializer = GameSerializer(instance=queryset, many=True)
+            return Response(data=serializer.data)
+        return Response(serializer.errors)
+    
+
+class ByDescendingViewSet(viewsets.ViewSet):
+    """ Поиск товаров по цене убывания, возрастания """
+    serializer_class = ByDescendingSerializer
+
+    def get_queryset(self, value, choise):
+        if value is True:
+            return Game.objects.all().order_by(f'-{choise}')
+        else:
+            return Game.objects.all().order_by(f'{choise}')
+
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        serializer = ByDescendingSerializer(data=request.data)
+        if serializer.is_valid():
+            value = serializer.validated_data['descending']
+            choise = serializer.validated_data['choises']
+            queryset = self.get_queryset(value, choise)
             serializer = GameSerializer(instance=queryset, many=True)
             return Response(data=serializer.data)
         return Response(serializer.errors)
