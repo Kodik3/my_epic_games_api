@@ -18,22 +18,22 @@ from .serializers import (
     FindPieceSerializer,
     ByDescendingSerializer
 )
-# Models.
+# models.
 from .models import (
     Game, 
     UserGame
 )
 from auths.models import CastomUser
-# Local.
+# abstracts.
 from abstracts.utils import get_object_or_404
+from abstracts.mixins import ObjectMixin, ResponseMixin
 from .utils import (
     save_game_to_user,
     all_user_games
 )
 
 
-
-class GameViewSet(viewsets.ViewSet):
+class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
     queryset = Game.objects.all()
     serializer_class = CreateGameSerializer
     
@@ -42,90 +42,48 @@ class GameViewSet(viewsets.ViewSet):
         return Response(data=serializer.data)
     
     def retrieve(self, request: Request, pk: int = None) -> Response:
-        try:
-            game = self.queryset.get(id=pk)
-        except Game.DoesNotExist:
-            raise ValidationError('Игра не найдена', code=404)
+        game = self.object_get(self.queryset, pk)
         serializer: GameSerializer = GameSerializer(instance=game)
-        return Response(data=serializer.data)
+        return self.json_response(data=serializer.data)
 
     def create(self, request: Request, *args, **kwargs) -> Response:
         serializer = CreateGameSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             game: Game = serializer.save()
-            return Response(data={
-                'status': 'OK',
-                'message': f"Game {game.name} is create! ID: {game.pk}"
-                }
-            )
+            return self.json_response(data=f"Game {game.name} is create! ID: {game.pk}")
         return Response(serializer.errors)
     
     def destroy(self, request: Request, pk: str) -> Response:
         """Удаление игры."""
-        try:
-            game: Game = self.queryset.get(id=pk)
-        except Game.DoesNotExist:
-            raise ValidationError('Game not found!', code=404)
+        game = self.object_get(self.queryset, pk)
         name: str = game.name
         game.delete()
-        return Response(
-            data={
-                'status': 'OK',
-                'message': f"Game {name} deleted! id: {pk}"
-            }
-        )
+        return self.json_response(data=f"Game {name} deleted! id: {pk}")
     
     def update(self, request: Request, pk: str) -> Response:
         """Обновление игры."""
-        try:
-            game = self.queryset.get(id=pk)
-        except Game.DoesNotExist:
-            raise ValidationError('Game not found', code=400)
-
+        game = self.object_get(self.queryset, pk)
         serializer: GameSerializer = GameSerializer(
             instance=game,
             data=request.data
             )
         if not serializer.is_valid():
-            return Response(
-                data={
-                    'status': 'Warning',
-                    'message': f'Warning with: {game.name}'
-                }
-            )
+            return self.json_response(status='Warning', data=f'Warning with: {game.name}')
         serializer.save()
-        return Response(
-            data={
-                'status': 'OK',
-                'message': f'Game: {game.name} was updated'
-            }
-        )
+        return self.json_response(data=f'Game: {game.name} was updated')
     
     def partial_update(self, request: Request, pk: int) -> Response:
-        try:
-            game = self.queryset.get(id=pk)
-        except Game.DoesNotExist:
-            raise ValidationError('Game not found', code=400)
-
+        game = self.object_get(self.queryset, pk)
         serializer: GameSerializer = GameSerializer(
             instance=game,
             data=request.data,
             partial=True
         )
         if not serializer.is_valid():
-            return Response(
-                data={
-                    'status': 'Warning',
-                    'message': f'Warning with: {game.name}'
-                }
-            )
-
+            return self.json_response(status='Warning', data=f'Game: {game.name} was updated')
         serializer.save()
-        return Response(data={
-            'status': 'OK',
-            'message': f'Game: {game.name} was updated'
-        })
-    
+        return self.json_response(data=f'Game: {game.name} was updated')
+ 
 
 class ActiveGameViewSet(viewsets.ViewSet):
     queryset = Game.objects.filter(quantity__gt=0)

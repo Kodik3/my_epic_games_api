@@ -17,22 +17,10 @@ class GameSerializer(serializers.Serializer):
     is_active = serializers.BooleanField()
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get(
-            'name',
-            instance.name
-        )
-        instance.price = validated_data.get(
-            'price',
-            instance.price
-        )
-        instance.rate = validated_data.get(
-            'rate',
-            instance.rate
-        )
-        instance.poster = validated_data.get(
-            'poster',
-            instance.poster
-        )
+        instance.name = validated_data.get('name', instance.name)
+        instance.price = validated_data.get('price', instance.price)
+        instance.rate = validated_data.get('rate', instance.rate)
+        instance.poster = validated_data.get('poster', instance.poster)
         instance.save()
         return instance
     
