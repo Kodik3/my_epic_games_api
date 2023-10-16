@@ -49,4 +49,4 @@ class GameComment(models.Model):
         verbose_name_plural = 'комментрии'
         
     def __str__(self):
-        return f"{self.owner} | {self.game}"
+        return f"{self.user} | {self.game}"

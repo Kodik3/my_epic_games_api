@@ -1,7 +1,7 @@
-from pathlib import Path
-from decouple import config
 import os
 import sys
+from pathlib import Path
+from decouple import config
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     # my apps\
     'games.apps.GamesConfig',
     'auths.apps.AuthsConfig',
@@ -91,3 +92,11 @@ STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'auths.CastomUser'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+from settings.jwt import SIMPLE_JWT # TODO: переделать импорт.

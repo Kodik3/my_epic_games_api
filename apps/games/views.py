@@ -10,6 +10,9 @@ from rest_framework import viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
+from rest_framework.permissions import (
+    IsAuthenticated
+)
 # serializers.
 from .serializers import (
     GameSerializer, 
@@ -20,7 +23,7 @@ from .serializers import (
 )
 # models.
 from .models import (
-    Game, 
+    Game,
     UserGame
 )
 from auths.models import CastomUser
@@ -36,10 +39,12 @@ from .utils import (
 class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
     queryset = Game.objects.all()
     serializer_class = CreateGameSerializer
+    permission_classes = [IsAuthenticated]
     
     def list(self, request: Request, *args, **kwargs) -> Response:
-        serializer = GameSerializer(instance=self.queryset, many=True)
-        return Response(data=serializer.data)
+        if request.user.is_authenticated:
+            serializer = GameSerializer(instance=self.queryset, many=True)
+            return Response(data=serializer.data)
     
     def retrieve(self, request: Request, pk: int = None) -> Response:
         game = self.object_get(self.queryset, pk)
