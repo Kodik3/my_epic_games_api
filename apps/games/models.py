@@ -6,6 +6,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 # models.
 from auths.models import CastomUser
+import datetime
 
 
 class Game(models.Model):
@@ -50,3 +51,27 @@ class GameComment(models.Model):
         
     def __str__(self):
         return f"{self.user} | {self.game}"
+    
+class Subscripe(models.Model):
+    game: Game = models.ForeignKey(
+        to=Game,
+        related_name='subs',
+        on_delete=models.CASCADE
+    )
+    user: CastomUser = models.ForeignKey(
+        to=CastomUser,
+        related_name='subs',
+        on_delete=models.CASCADE
+    )
+    is_active: bool = models.BooleanField(
+        default=True
+    )
+    datetime_finished = models.DateField(
+        verbose_name='Дата завершения',
+        default=(datetime.datetime.today() + datetime.timedelta(days=30))
+    )
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

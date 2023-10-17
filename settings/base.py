@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_crontab',
     # my apps\
     'games.apps.GamesConfig',
     'auths.apps.AuthsConfig',
@@ -98,5 +99,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+CRONJOBS = [
+    ('0 0 * * *', 'auths.tasks.DailyTasks') # выполняется каждый день.
+]
 
 from settings.jwt import SIMPLE_JWT # TODO: переделать импорт.

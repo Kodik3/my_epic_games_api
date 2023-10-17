@@ -22,8 +22,10 @@ class AuthUserViewSet(viewsets.ViewSet, ResponseMixin):
                 user: CastomUser = \
                     CastomUser.objects.create_user(
                     email=serializer.validated_data['email'],
-                    password=pas1
                 )
+                user.set_password(pas1)
+                user.nickname = f"user{user.id}"
+                user.save()
                 return self.json_response(data=f"User {user.email} is create! ID: {user.pk}")
             else:
                 return self.json_response(status='Warning', data=f'{pas1} != {pas2}')

@@ -7,6 +7,7 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.views import View
 # Rest-framework.
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
@@ -24,7 +25,8 @@ from .serializers import (
 # models.
 from .models import (
     Game,
-    UserGame
+    UserGame,
+    Subscripe
 )
 from auths.models import CastomUser
 # abstracts.
@@ -88,6 +90,24 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
             return self.json_response(status='Warning', data=f'Game: {game.name} was updated')
         serializer.save()
         return self.json_response(data=f'Game: {game.name} was updated')
+    
+    @action(methods=['POST'], detail=False, url_path='/subscribe/(?P<pk>[^/.]+)')
+    def subscribe(self, req: Request, pk:int=None) -> Response:
+        game = self.object_get(queryset=self.queryset, obj_id=pk)
+        sub = Subscripe.objects.create(
+            user=req.user,
+            is_active=True,
+            game=game
+        )
+        return self.json_response(
+            data={
+                "message" : {
+                    "game_id": game.id,
+                    "subscribe_id": sub.id,
+                    "date_finished": sub.datetime_finished
+                }
+            }
+        )
  
 
 class ActiveGameViewSet(viewsets.ViewSet):
