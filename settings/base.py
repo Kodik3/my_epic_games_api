@@ -8,8 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
 
-SECRET_KEY = config('SECRET_KEYSECRET_KEY', str)
-DEBUG = config('DEBUG', bool)
+SECRET_KEY = "secret-key12321wcqgrefw"
+DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
