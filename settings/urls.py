@@ -20,7 +20,7 @@ from games.views import (
     ByDescendingViewSet
 )
 from auths.views import (
-    AuthUserViewSet
+    UserViewSet
 )
 
 
@@ -32,7 +32,7 @@ router.register(r'search/range', SearchProductsInPriceRange, basename='range')
 router.register(r'search/piece', FindPieceOfTextViewSet, basename='piece')
 router.register(r'search/descending', ByDescendingViewSet, basename='descending')
 
-router.register(r'user', AuthUserViewSet, basename='user')
+router.register(r'user', UserViewSet, basename='user')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

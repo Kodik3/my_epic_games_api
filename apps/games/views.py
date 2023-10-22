@@ -36,12 +36,15 @@ from .utils import (
     save_game_to_user,
     all_user_games
 )
+from .permissions import GamePermission
 
 
 class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
+    permission_classes = (
+        GamePermission,
+    )
     queryset = Game.objects.all()
     serializer_class = CreateGameSerializer
-    permission_classes = [IsAuthenticated]
     
     def list(self, request: Request, *args, **kwargs) -> Response:
         if request.user.is_authenticated:

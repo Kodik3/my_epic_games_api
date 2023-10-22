@@ -12,9 +12,6 @@ class CastomUserManager(BaseUserManager):
         user = self.model(email=email, **kwargs)
         user.set_password(password)
         user.save(using=self._db)
-        # создание токена пользователя.
-        refresh = RefreshToken.for_user(user)
-        print(f"Access Token: {str(refresh.access_token)}")
         return user
 
     def create_superuser(self, email: str, password:str=None, **kwargs):
