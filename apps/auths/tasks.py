@@ -10,20 +10,23 @@ class DailyTasks(CronJobBase):
     
     def subscription_verification(self):
         '''
-        проверяются пользователи только с подпиской.
-        если дата окончания == сегодняшней, тогда
+        Проверяются пользователи только с подпиской.
+        Если дата окончания == сегодняшней, тогда
         убираем подписку у пользователя.
         '''
-        users = CastomUser.objects.all()
-        to_emails = []
+        today = dt.now().date()
+        to_emails: list = []
+        users = CastomUser.objects.filter(subscription=True, subscription_end_date=today)
+
         for user in users:
-            if user.subscription == True:
-                if user.subscription_end_date == dt.now():
-                    user.subscription = False
-                    to_emails.append(user.email)
-                    user.save(update_fields=['subscription'])
-        return send_email(
-            f'У вас закончилась подписка',
-                ('обновить подписку {}'.format('тут будет ссылка на страницу покупки подписки')),
-            to_emails
-        )
+            user.subscription = False
+            to_emails.append(user.email)
+            user.save(update_fields=['subscription'])
+        if to_emails:
+            return send_email(
+                f'У вас закончилась подписка',
+                ('обновить подписку {}'.format('ссылка на страницу покупки подписки')),
+                to_emails
+            )
+        else:
+            return None

@@ -7,6 +7,11 @@ from rest_framework.validators import ValidationError
 from rest_framework.response import Response
 
 
+class ErrorMixin:
+    def error(self, message: str, code: int) -> None:
+        raise ValidationError({'error': message}, code=code)
+
+
 class ObjectMixin:
     def object_get(self, queryset: query.QuerySet, obj_id: str) -> Any:
         object: Any = queryset.filter(pk=int(obj_id)).first()
