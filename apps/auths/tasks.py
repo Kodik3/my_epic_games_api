@@ -14,7 +14,7 @@ class DailyTasks(CronJobBase):
         если дата окончания == сегодняшней, тогда
         убираем подписку у пользователя.
         '''
-        today = dt.now()
+        today = dt.now().date()
         to_emails: list = []
         users = CastomUser.objects.filter(subscription=False, subscription_end_date=today)
         for user in users:
