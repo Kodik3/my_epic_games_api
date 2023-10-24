@@ -37,19 +37,20 @@ from .utils import (
     all_user_games
 )
 from .permissions import GamePermission
+from .tasks import do_test, heloo
 
 
 class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
-    permission_classes = (
-        GamePermission,
-    )
+    # permission_classes = (
+    #     GamePermission,
+    #     IsAuthenticated
+    # )
     queryset = Game.objects.all()
     serializer_class = CreateGameSerializer
     
     def list(self, request: Request, *args, **kwargs) -> Response:
-        if request.user.is_authenticated:
-            serializer = GameSerializer(instance=self.queryset, many=True)
-            return Response(data=serializer.data)
+        serializer = GameSerializer(instance=self.queryset, many=True)
+        return self.json_response(data=serializer.data)
     
     def retrieve(self, request: Request, pk: int = None) -> Response:
         game = self.object_get(self.queryset, pk)
@@ -111,7 +112,15 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
                 }
             }
         )
- 
+    @action(methods=['GET'], detail=False, url_path='sub/check/(?P<pk>[^/.]+)')
+    def subscribe(self, req: Request, pk:int=None) -> Response:
+        do_test()
+        return self.json_response(
+            data={
+                "massage" : "ok"
+            }
+        )
+    
 
 class ActiveGameViewSet(viewsets.ViewSet):
     queryset = Game.objects.filter(quantity__gt=0)

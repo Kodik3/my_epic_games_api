@@ -37,7 +37,7 @@ class DailyTasks(CronJobBase):
 #! 2 schedule
 # def subscription_verification():
 #     today = dt.now().date()
-#     to_emails = []
+#     to_emails: list = []
 #     users = CastomUser.objects.filter(subscription=False, subscription_end_date=today)
 #     for user in users:
 #         user.subscription = False
@@ -64,7 +64,7 @@ class DailyTasks(CronJobBase):
 # @app.task
 # def subscription_verification():
 #     today = dt.now().date()
-#     to_emails = []
+#     to_emails: list = []
 #     users = CastomUser.objects.filter(subscription=False, subscription_end_date=today)
 #     for user in users:
 #         user.subscription = False
