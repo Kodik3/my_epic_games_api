@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_crontab',
+    'django_celery_results',
     # my apps\
     'games.apps.GamesConfig',
     'auths.apps.AuthsConfig',
@@ -100,8 +100,12 @@ REST_FRAMEWORK = {
     )
 }
 
-CRONJOBS = [
-    ('0 0 * * *', 'auths.tasks.DailyTasks') # выполняется каждый день.
-]
+#! CELERY.
+CELERY_TIMEZONE = "Asia/Almaty"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'redis'
+CELERY_BROKER_URL = 'redis://localhost:6379'
 
 from settings.jwt import SIMPLE_JWT # TODO: переделать импорт.
