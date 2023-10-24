@@ -39,9 +39,7 @@ class UserGame(models.Model):
 class GameComment(models.Model):
     user = models.ForeignKey(to=CastomUser, verbose_name='пользователь', on_delete=models.CASCADE, related_name='comment')
     game = models.ForeignKey(to=Game, verbose_name='игра', on_delete=models.CASCADE, related_name='comment')
-    text = models.CharField(verbose_name='текст', max_length=200,
-        validators=[MinValueValidator(0, message='Ваш текст пустой!')]
-    )
+    text = models.CharField(verbose_name='текст', max_length=200)
     is_delete = models.BooleanField(default=False)
     
     class Meta:
