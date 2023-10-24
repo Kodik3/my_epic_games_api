@@ -1,7 +1,10 @@
 # Rest_framework.
 from rest_framework import serializers
 # models.
-from .models import Game
+from .models import (
+    Game,
+    GameComment
+)
 
 
 class GameSerializer(serializers.Serializer):
@@ -51,4 +54,10 @@ class ByDescendingSerializer(serializers.Serializer):
         )
     )
     descending = serializers.BooleanField(default=False)
+    
+
+class GameCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameComment
+        fields = ['user', 'game', 'text']
 

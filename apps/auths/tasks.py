@@ -20,7 +20,7 @@ class DailyTasks(CronJobBase):
         '''
         today = dt.now().date()
         to_emails: list = []
-        users = CastomUser.objects.filter(subscription=False, subscription_end_date=today)
+        users = CastomUser.objects.filter(subscription=True, subscription_end_date=today)
         for user in users:
             user.subscription = False
             to_emails.append(user.email)

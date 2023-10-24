@@ -32,15 +32,22 @@ from auths.models import CastomUser
 # abstracts.
 from abstracts.utils import get_object_or_404
 from abstracts.mixins import ObjectMixin, ResponseMixin
+# utils.
 from .utils import (
     save_game_to_user,
     all_user_games
 )
+# permissions.
 from .permissions import GamePermission
-from .tasks import do_test
+# tasks.
+from .tasks import (
+    do_test,
+    game_sub_verifi
+)
 
 
 class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
+    #! для этого надо получить токен
     # permission_classes = (
     #     GamePermission,
     #     IsAuthenticated
@@ -114,10 +121,24 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
         )
     @action(methods=['GET'], detail=False, url_path='sub/check/(?P<pk>[^/.]+)')
     def subscribe(self, req: Request, pk:int=None) -> Response:
-        do_test()
+        context:dict = {}
+        context['game_id'] = pk
+        game_sub_verifi.apply_async(kwargs=context,countdown=30*24*60*60)
         return self.json_response(
             data={
                 "massage" : "ok"
+            }
+        )
+        
+    @action(methods=['GET'], detail=False, url_path='sub/finish/(?P<pk>[^/.]+)')
+    def buy_subscribe(self, req: Request, pk:int=None) -> Response:
+        context:dict = {}
+        context['game_id'] = pk
+        context['user'] = req.user
+        game_sub_verifi.apply_async(kwargs=context,countdown=30*24*60*60)
+        return self.json_response(
+            data={
+                "massage" : "[OK] Sub is False"
             }
         )
     
