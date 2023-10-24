@@ -37,7 +37,7 @@ from .utils import (
     all_user_games
 )
 from .permissions import GamePermission
-from .tasks import do_test, heloo
+from .tasks import do_test
 
 
 class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
