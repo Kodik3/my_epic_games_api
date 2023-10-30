@@ -20,7 +20,8 @@ from .serializers import (
     CreateGameSerializer, 
     SearchRangeProductsSerializer,
     FindPieceSerializer,
-    ByDescendingSerializer
+    ByDescendingSerializer,
+    SubscripeSerializer
 )
 # models.
 from .models import (
@@ -42,7 +43,8 @@ from .permissions import GamePermission
 # tasks.
 from .tasks import (
     do_test,
-    game_sub_verifi
+    game_sub_verifi,
+    finish_sub
 )
 
 
@@ -119,6 +121,7 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
                 }
             }
         )
+
     @action(methods=['GET'], detail=False, url_path='sub/check/(?P<pk>[^/.]+)')
     def subscribe(self, req: Request, pk:int=None) -> Response:
         context:dict = {}
@@ -232,4 +235,19 @@ class ByDescendingViewSet(viewsets.ViewSet):
             queryset = self.get_queryset(value, choise)
             serializer = GameSerializer(instance=queryset, many=True)
             return Response(data=serializer.data)
+        return Response(serializer.errors)
+
+class SubscripeViewSet(viewsets.ViewSet):
+    queryset = Subscripe.objects.filter(is_active=True)
+    serializer_class = SubscripeSerializer
+
+    def list(self, req: Request, *args, **kwargs) -> Response:
+        serializer = SubscripeSerializer(instance=self.queryset, many=True)
+        return Response(data=serializer.data)
+
+    def create(self, req: Request, *args, **kwargs) -> Response:
+        serializer = SubscripeSerializer(data=req.data)
+        if serializer.is_valid(raise_exception=True):
+            sub: Subscripe = serializer.save()
+            finish_sub.apply_async(kwargs={"sub": sub},countdown=30*24*60*60)
         return Response(serializer.errors)

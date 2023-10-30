@@ -17,7 +17,11 @@ class CastomUserManager(BaseUserManager):
     def create_superuser(self, email: str, password:str=None, **kwargs):
         kwargs.setdefault('is_staff', True)
         kwargs.setdefault('is_superuser', True)
-        return self.create_user(email, password, **kwargs)
+        kwargs.setdefault('subscription', True)
+        superuser = self.create_user(email, password, **kwargs)
+        refresh_token = RefreshToken.for_user(superuser)
+        print(f"Refresh : {refresh_token}\n Access : {refresh_token.access_token}")
+        return superuser
 
 
 class CastomUser(AbstractBaseUser, PermissionsMixin):

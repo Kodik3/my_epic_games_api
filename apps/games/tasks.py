@@ -1,8 +1,13 @@
+# Python.
+from datetime import datetime as dt
+# Django.
 from django.db.models import F
+from django.core.mail import send_mail
+# Celery.
 from settings.celery import app
+# models.
 from .models import Game, Subscripe
 from auths.models import CastomUser
-from datetime import datetime as dt
 
 
 @app.task
@@ -29,6 +34,8 @@ def game_sub_verifi(game_id:int, *args, **kwargs):
         sub.save(fields=['is_active'])
         
 @app.task
-def finish_sub(user, game_id:int, *args, **kwargs):
-    ...
+def finish_sub(sub, *args, **kwargs):
+    sub.is_active = False
+    sub.save(update_fields=['is_active'])
+    print("Sub finish")
     

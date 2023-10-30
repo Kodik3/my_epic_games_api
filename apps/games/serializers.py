@@ -3,7 +3,8 @@ from rest_framework import serializers
 # models.
 from .models import (
     Game,
-    GameComment
+    GameComment,
+    Subscripe
 )
 
 
@@ -61,3 +62,8 @@ class GameCommentSerializer(serializers.ModelSerializer):
         model = GameComment
         fields = ['user', 'game', 'text']
 
+
+class SubscripeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscripe
+        fields = ['game', 'user']
