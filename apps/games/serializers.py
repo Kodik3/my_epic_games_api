@@ -19,22 +19,30 @@ class GameSerializer(serializers.Serializer):
     poster = serializers.ImageField(required=False)
     rate = serializers.FloatField(required=False)
     is_active = serializers.BooleanField()
+    is_discount = serializers.BooleanField(required=False)
+    discount = serializers.FloatField(required=False)
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.price = validated_data.get('price', instance.price)
         instance.rate = validated_data.get('rate', instance.rate)
         instance.poster = validated_data.get('poster', instance.poster)
+        
+        instance.is_discount = validated_data.get('is_discount', instance.is_discount)
+        instance.discount = validated_data.get('discount', instance.discount)
         instance.save()
         return instance
     
     
 class CreateGameSerializer(serializers.ModelSerializer):
-    rate= serializers.FloatField(default=0)
-    quantity= serializers.IntegerField(default=0)
+    rate= serializers.FloatField(default=0, required=False)
+    quantity= serializers.IntegerField(default=0, required=False)
+    is_discount = serializers.BooleanField(required=False)
+    discount = serializers.FloatField(required=False)
     class Meta:
         model = Game
-        fields = ['name', 'price', 'poster', 'rate', 'quantity']
+        fields = ['name', 'price', 'poster', 'rate', 'quantity', 'is_discount', 'discount']
+
 
 class SearchRangeProductsSerializer(serializers.Serializer):
     price1 = serializers.DecimalField(max_digits=11, decimal_places=2)

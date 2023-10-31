@@ -17,11 +17,15 @@ class Game(models.Model):
     poster = models.ImageField(verbose_name='постер', upload_to='posters', default='posters/default_game.png', blank=True)
     rate = models.FloatField(verbose_name='рэйтинг', max_length=5, default=0, blank=True, null=True)
     quantity = models.IntegerField(verbose_name='количество', default=0, blank=True)
+    # скидка
+    is_discount = models.BooleanField(default=False)
+    discount = models.FloatField(verbose_name='скидка', max_length=100, default=0, blank=True, null=True)
+    # discount_duration = models.IntegerField(verbose_name='длительность скидки', default=0, blank=True) # в днях.
 
     @property
     def is_active(self):
         return self.quantity > 0
-
+    
     class Meta:
         ordering=('id',)
         verbose_name='игра'

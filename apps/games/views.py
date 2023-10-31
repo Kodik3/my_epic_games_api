@@ -82,11 +82,12 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
     
     def update(self, request: Request, pk: str) -> Response:
         """Обновление игры."""
+        data = request.data
         game = self.object_get(self.queryset, pk)
         serializer: GameSerializer = GameSerializer(
             instance=game,
-            data=request.data
-            )
+            data=data
+        )
         if not serializer.is_valid():
             return self.json_response(status='Warning', data=f'Warning with: {game.name}')
         serializer.save()
@@ -103,7 +104,7 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
             return self.json_response(status='Warning', data=f'Game: {game.name} was updated')
         serializer.save()
         return self.json_response(data=f'Game: {game.name} was updated')
-    
+        
     @action(methods=['POST'], detail=False, url_path='/subscribe/(?P<pk>[^/.]+)')
     def subscribe(self, req: Request, pk:int=None) -> Response:
         game = self.object_get(queryset=self.queryset, obj_id=pk)
@@ -123,7 +124,7 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
         )
 
     @action(methods=['GET'], detail=False, url_path='sub/check/(?P<pk>[^/.]+)')
-    def subscribe(self, req: Request, pk:int=None) -> Response:
+    def subscribe_check(self, req: Request, pk:int=None) -> Response:
         context:dict = {}
         context['game_id'] = pk
         game_sub_verifi.apply_async(kwargs=context,countdown=30*24*60*60)
