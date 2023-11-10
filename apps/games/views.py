@@ -45,7 +45,8 @@ from .tasks import (
     do_test,
     game_sub_verifi,
     finish_sub,
-    cancel_subcribe
+    cancel_subcribe,
+    remove_subscribe
 )
 
 
@@ -153,7 +154,18 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
         return self.json_response(
             data={"massage" : "[OK] Sub is False"}
         )
-    
+
+    @action(methods=['POST'], detail=False, url_path='sub/remove/(?P<pk>[^/.]+)')
+    def remove_sub(self, req: Request, pk: int) -> Response:
+        context: dict = {}
+        game = Game.objects.get(id=pk)
+        try:
+            sub = Subscribe.objects.get(game=game, user=req.user)
+            context['sub'] = sub
+        except Subscribe.DoesNotExist:
+            raise ValidationError('У вас нет подписки на эту игру!')
+        remove_subscribe.apply_async(context)
+        return self.json_response(data={"message": "Sub is remove!"})
 
 class ActiveGameViewSet(viewsets.ViewSet):
     queryset = Game.objects.filter(quantity__gt=0)

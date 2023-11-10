@@ -44,14 +44,14 @@ def finish_sub(sub, *args, **kwargs) -> None:
     if sub.auto_buy is False:
         sub.is_active = False
         sub.save(update_fields=['is_active'])
-        print("Sub finish")
     else:
         ... #! продливаем подписку (await sub.auto_buy: False)
 
 @app.task(name='sub-remove')
-def remove_subscribe() -> None:
-    qs: Subscribe = Subscribe.objects.all().filter
-    active_sub = qs.filter()
+def remove_subscribe(sub, *args, **kwargs) -> None:
+    if sub:
+        sub.is_active = True
+        sub.save(fields=['is_active'])
 
 
 @app.task(name='games-price-updater')
