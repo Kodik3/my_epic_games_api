@@ -12,7 +12,7 @@ SECRET_KEY = "secret-key12321wcqgrefw"
 DEBUG = True
 ALLOWED_HOSTS = []
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -22,12 +22,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_celery_results',
-    # my apps\
+    'django_celery_results'
+]
+
+PROJECT_APPS = [
     'games.apps.GamesConfig',
     'auths.apps.AuthsConfig',
     'abstracts.apps.AbstractsConfig'
 ]
+
+INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

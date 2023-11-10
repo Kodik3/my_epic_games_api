@@ -13,20 +13,23 @@ from .serializers import (
 )
 # models.
 from .models import CastomUser
-
+from auths.paginators import MyLimitPaginator
 
 class UserViewSet(viewsets.ViewSet, ResponseMixin):
     queryset = CastomUser.objects.all()
     serializer_class = CreateUserSerializer
+    pagination_class = MyLimitPaginator
     
-    def default_name(self, user_id:int):
-        return f"user{user_id}"
-    
-    def list(self, req:Request, *args, **kwargs) -> Response:
-        serializer = UserSerializer(self.queryset, many=True)
-        return Response(data=serializer.data)
+    def list(self, req: Request, *args, **kwargs) -> Response:
+        queryset = self.queryset
+        paginator = MyLimitPaginator()
+        page = paginator.paginate_queryset(queryset, req)
+        serializer = UserSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
     def create(self, req: Request, *args, **kwargs) -> Response:
+        def default_name(user_id: int):
+            return f"user{user_id}"
         serializer = CreateUserSerializer(data=req.data)
         if serializer.is_valid(raise_exception=True):
             pas1 = serializer.validated_data['password']
@@ -37,7 +40,7 @@ class UserViewSet(viewsets.ViewSet, ResponseMixin):
                     email=serializer.validated_data['email'],
                 )
                 user.set_password(pas1)
-                user.name = self.default_name(user.id)
+                user.name = default_name(user.id)
                 user.save()
                 return self.json_response(data=f"User {user.email} is create! ID: {user.pk}")
             else:

@@ -31,7 +31,7 @@ router.register(r'active_game', ActiveGameViewSet, basename='active')
 router.register(r'search/range', SearchProductsInPriceRange, basename='range')
 router.register(r'search/piece', FindPieceOfTextViewSet, basename='piece')
 router.register(r'search/descending', ByDescendingViewSet, basename='descending')
-
+#* User routers.
 router.register(r'user', UserViewSet, basename='user')
 
 urlpatterns = [

@@ -53,8 +53,9 @@ class GameComment(models.Model):
         
     def __str__(self):
         return f"{self.user} | {self.game}"
-    
-class Subscripe(models.Model):
+
+
+class Subscribe(models.Model):
     game: Game = models.ForeignKey(
         to=Game,
         related_name='subs',
@@ -65,9 +66,9 @@ class Subscripe(models.Model):
         related_name='subs',
         on_delete=models.CASCADE
     )
-    is_active: bool = models.BooleanField(
-        default=True
-    )
+    is_active: bool = models.BooleanField(default=True)
+    auto_buy: bool = models.BooleanField(default=False)
+
     datetime_finished = models.DateField(
         verbose_name='Дата завершения',
         default=(datetime.datetime.today() + datetime.timedelta(days=30))

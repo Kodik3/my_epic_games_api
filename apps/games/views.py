@@ -21,13 +21,13 @@ from .serializers import (
     SearchRangeProductsSerializer,
     FindPieceSerializer,
     ByDescendingSerializer,
-    SubscripeSerializer
+    SubscribeSerializer
 )
 # models.
 from .models import (
     Game,
     UserGame,
-    Subscripe
+    Subscribe
 )
 from auths.models import CastomUser
 # abstracts.
@@ -44,7 +44,8 @@ from .permissions import GamePermission
 from .tasks import (
     do_test,
     game_sub_verifi,
-    finish_sub
+    finish_sub,
+    cancel_subcribe
 )
 
 
@@ -107,11 +108,16 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
         
     @action(methods=['POST'], detail=False, url_path='/subscribe/(?P<pk>[^/.]+)')
     def subscribe(self, req: Request, pk:int=None) -> Response:
+        CANCEL_TIMEOUT_30_DAYS = 30*24*60*60
         game = self.object_get(queryset=self.queryset, obj_id=pk)
-        sub = Subscripe.objects.create(
+        sub = Subscribe.objects.create(
             user=req.user,
             is_active=True,
             game=game
+        )
+        cancel_subcribe.apply_async(
+            kwargs={'subcribe_id': sub.id},
+            countdown=CANCEL_TIMEOUT_30_DAYS
         )
         return self.json_response(
             data={
@@ -129,21 +135,23 @@ class GameViewSet(viewsets.ViewSet, ObjectMixin, ResponseMixin):
         context['game_id'] = pk
         game_sub_verifi.apply_async(kwargs=context,countdown=30*24*60*60)
         return self.json_response(
-            data={
-                "massage" : "ok"
-            }
+            data={"massage" : "ok"}
         )
         
-    @action(methods=['GET'], detail=False, url_path='sub/finish/(?P<pk>[^/.]+)')
+    @action(methods=['POST'], detail=False, url_path='sub/finish/(?P<pk>[^/.]+)')
     def buy_subscribe(self, req: Request, pk:int=None) -> Response:
         context:dict = {}
-        context['game_id'] = pk
-        context['user'] = req.user
-        game_sub_verifi.apply_async(kwargs=context,countdown=30*24*60*60)
+        CANCEL_TIMEOUT_30_DAYS = 30*24*60*60
+        Subscribe = Subscribe.objects.create(
+            game=Game.objects.get(id=pk),
+            user=req.user,
+            is_active=True,
+            auto_buy=...            
+        )
+        context['sub'] = Subscribe
+        game_sub_verifi.apply_async(kwargs=context,countdown=CANCEL_TIMEOUT_30_DAYS)
         return self.json_response(
-            data={
-                "massage" : "[OK] Sub is False"
-            }
+            data={"massage" : "[OK] Sub is False"}
         )
     
 
@@ -238,17 +246,17 @@ class ByDescendingViewSet(viewsets.ViewSet):
             return Response(data=serializer.data)
         return Response(serializer.errors)
 
-class SubscripeViewSet(viewsets.ViewSet):
-    queryset = Subscripe.objects.filter(is_active=True)
-    serializer_class = SubscripeSerializer
+class SubscribeViewSet(viewsets.ViewSet):
+    queryset = Subscribe.objects.filter(is_active=True)
+    serializer_class = SubscribeSerializer
 
     def list(self, req: Request, *args, **kwargs) -> Response:
-        serializer = SubscripeSerializer(instance=self.queryset, many=True)
+        serializer = SubscribeSerializer(instance=self.queryset, many=True)
         return Response(data=serializer.data)
 
     def create(self, req: Request, *args, **kwargs) -> Response:
-        serializer = SubscripeSerializer(data=req.data)
+        serializer = SubscribeSerializer(data=req.data)
         if serializer.is_valid(raise_exception=True):
-            sub: Subscripe = serializer.save()
+            sub: Subscribe = serializer.save()
             finish_sub.apply_async(kwargs={"sub": sub},countdown=30*24*60*60)
         return Response(serializer.errors)
